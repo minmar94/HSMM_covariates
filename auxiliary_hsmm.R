@@ -68,7 +68,7 @@ copula.sim <- function(n, tau){
 ############################################
 ## Wrapper for simulation
 ############################################
-simulate_hsmm_torus <- function(n, K, delta, alpha, betai, beta_x, pars, xmat, seed = 7777){
+simulate_hsmm_torus <- function(n, K, delta, alpha, betai, beta_x, pars, xmat, omega, seed = 7777){
   
   if(is.null(seed)) seed <- sample(1111:111111,1)
   set.seed(seed)
@@ -79,9 +79,9 @@ simulate_hsmm_torus <- function(n, K, delta, alpha, betai, beta_x, pars, xmat, s
   state_lab <- which(u[1,]==1) # get the label
   
   # Random generation of omega
-  omega <- matrix(runif(K*K), K, K)
-  diag(omega) <- 0
-  for(k in 1:K) omega[k,-k] <- omega[k,-k]/sum(omega[k,-k]) 
+  # omega <- matrix(runif(K*K), K, K)
+  # diag(omega) <- 0
+  # for(k in 1:K) omega[k,-k] <- omega[k,-k]/sum(omega[k,-k]) 
   
   # Dati
   ymat <- matrix(NA, nrow = n, ncol = 2)
@@ -420,7 +420,7 @@ cloglog.hsmm.EM <- function(y, x = NULL, init = NULL, max.iter = 50, tol = 10^-4
     if(verbose==TRUE) cat("iteration ", step,"; loglik = ", llk[step], "\n")
   }
   return(list(K = K, theta.array = theta.array, Pi = post.pi[1,], 
-              Gamma = Gamma_mat,
+              Gamma = Gamma_mat, Omega = Omega,
               p.array = p.array, beta.array = beta.array, theta.array.step = theta.array.step, beta.array.step = beta.array.step,
               loglik = llk, iteration = step, post.pi = post.pi, 
               post.pi.aug = post.pi.aug, post.bi.pi.aug = post.bi.pi.aug))
