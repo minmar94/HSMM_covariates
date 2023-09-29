@@ -33,9 +33,23 @@ taus <- list(c(0.5, 0.5, 0.2, 0.3, 0.6, 2, 2, 0.2, 0.8, 0.1),
              c(0.5, 0.5, 0.2, 0.3, 0.6, 2, 2, 0.2, 0.8, 0.1, 2, -2, 0.5, 0.5, -0.6),
              c(0.5, 0.5, 0.2, 0.3, 0.6, 2, 2, 0.2, 0.8, 0.1, -2, -2, 0.7, 0.9, -0.3, 2, -2, 0.5, 0.5, -0.6))
 
+# Markov-chain true probabilities
+omegas <- omegas <- list(c(0, 1, 
+                           1, 0), 
+                         c(0, 0.5, 0.5,
+                           0.9, 0, 0.1, 
+                           0.45, 0.55, 0),
+                         c(0, 0.25, 0.25, 0.5,
+                           0.7, 0, 0.2, 0.1, 
+                           0.15, 0.25, 0, 0.6,
+                           0.3, 0.2, 0.5, 0))
+
 beta.array <- cbind(betat_0K, betat_1K, betax_K)
 
 tau0 <- matrix(taus[[K-1]], nrow = K, byrow = T)
+
+omega_sim <- matrix(omegas[[K-1]], byrow = T, nrow = K)
+colnames(omega_sim) <- paste0("omega_", 1:K)
 
 # Simulation --------------------------------------------------------------
 numcores <- detectCores() - 2
@@ -58,7 +72,7 @@ out <- foreach(nsim = 1:nsimul, .export = ls(), .inorder = T) %dopar% {
   
   # Simulation
   sims <- simulate_hsmm_torus(n = ntimes, K = K, delta = delta, alpha = betat_0K, betai = betat_1K, 
-                              beta_x = as.matrix(betax_K), pars = tau0, xmat = xmat, seed = seeds[nsim])
+                              beta_x = as.matrix(betax_K), pars = tau0, xmat = xmat, omega = omega_sim, seed = seeds[nsim])
   # set M
   M <- round(sims$M*Mperc)
   
@@ -96,7 +110,9 @@ out <- foreach(nsim = 1:nsimul, .export = ls(), .inorder = T) %dopar% {
     error = function(e) {hsmm2new = "Error"; return(hsmm2new)}
   )
   
-  if(!is.character(hsmm2new)) hsmm2new <- hsmm2new[-c(4, 5, 12, 13)]
+  if(!is.character(hsmm2new)) hsmm2new <- hsmm2new[-c(4, 6, 13, 14)]
+  class <- apply(hsmm2new$post.pi, 1, which.max)
+  hsmm2new$ARI <- mclust::adjustedRandIndex(sims$state, class)
   return(hsmm2new)
 }
 tend <- Sys.time() - tinit
