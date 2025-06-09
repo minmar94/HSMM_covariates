@@ -308,7 +308,7 @@ EM.start <- function(y, x = NULL, K, M, model_type, dim.theta, help_mu = T, thet
   d <- rep(1:K, ld)
   d_matrix <- array(0, dim = c(sum(ld)*(n-1), q+2))
   d_matrix[,1] <- rep(d, n-1)
-  d_matrix[,2] <- rep(unlist(lapply(1:K, function(k) 1:ld[k])), n-1)
+  d_matrix[,2] <- rep(unlist(lapply(1:K, function(k) (1:ld[k])+0.5)), n-1)
   for(j in 1:q) d_matrix[,2+j] <- rep(x[1:(n-1),j], each = sum(ld)) # covariata osservata, tranne l'ultimo termine
   # for(j in 1:q) d_matrix[,2+j] <- rep(c(diff(x[,j])[1], diff(x[,j])[-length(diff(x[,j]))]), each = sum(ld)) # differenze prime della covariata
   d_matrix <- as.data.frame(d_matrix)
